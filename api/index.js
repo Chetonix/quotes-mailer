@@ -6,6 +6,10 @@ require('dotenv').config();
 const path = require('path');
 
 const app = express();
+
+// Enable CORS middleware
+// app.use(cors());
+
 app.use(bodyParser.json());
 
 // Serve static files from the 'frontend' directory
@@ -14,7 +18,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 let subscribers = [];
 
-app.post('/subscribe', (req, res) => {
+app.post('/api/subscribe', (req, res) => {
   const email = req.body.email;
   if (email && !subscribers.includes(email)) {
     subscribers.push(email);
