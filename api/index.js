@@ -3,9 +3,14 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
+
+// Serve static files from the 'frontend' directory
+app.use(express.static(path.join(__dirname, 'frontend')));
+
 
 let subscribers = [];
 
