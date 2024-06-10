@@ -52,9 +52,13 @@
         },
         body: JSON.stringify({ email: email })
       })
-      .then(response => response.json())
-      .then(data => {
-        feedbackMessage.textContent = 'Subscription successful!';
+      .then(response => response.json().then(data => ({ status: response.status, body: data })))
+      .then(({ status, body }) => {
+        if (status === 200) {
+          feedbackMessage.textContent = body.message;
+        } else {
+          feedbackMessage.textContent = body.message;
+        }
         feedbackMessage.classList.remove('hidden');
       })
       .catch((error) => {
