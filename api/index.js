@@ -2,29 +2,45 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 require('dotenv').config();
 const path = require('path');
 
 const app = express();
-
-// Enable CORS middleware
-// app.use(cors());
 
 app.use(bodyParser.json());
 
 // Serve static files from the 'frontend' directory
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected...'))
+  .catch(err => console.log(err));
 
-let subscribers = [];
+// Define Subscriber schema and model
+const subscriberSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true }
+});
 
-app.post('/api/subscribe', (req, res) => {
+const Subscriber = mongoose.model('Subscriber', subscriberSchema);
+
+app.post('/api/subscribe', async (req, res) => {
   const email = req.body.email;
-  if (email && !subscribers.includes(email)) {
-    subscribers.push(email);
-    res.json({ message: 'Subscription successful!' });
+  if (email) {
+    try {
+      const subscriber = new Subscriber({ email });
+      await subscriber.save();
+      res.json({ message: 'Subscription successful!' });
+    } catch (error) {
+      if (error.code === 11000) { // Duplicate key error code
+        res.status(400).json({ message: 'Email already subscribed.' });
+      } else {
+        res.status(500).json({ message: 'Internal server error.' });
+      }
+    }
   } else {
-    res.status(400).json({ message: 'Invalid email or already subscribed.' });
+    res.status(400).json({ message: 'Invalid email.' });
   }
 });
 
@@ -39,6 +55,8 @@ const fetchQuotes = async () => {
 };
 
 const sendEmails = async (quotes) => {
+  const subscribers = await Subscriber.find();
+
   if (subscribers.length === 0) return;
 
   const transporter = nodemailer.createTransport({
@@ -51,19 +69,19 @@ const sendEmails = async (quotes) => {
 
   const quote = quotes[Math.floor(Math.random() * quotes.length)];
 
-  for (const email of subscribers) {
+  for (const subscriber of subscribers) {
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: email,
+      to: subscriber.email,
       subject: 'Daily Inspirational Quote',
       text: `${quote.text} - ${quote.author || 'Unknown'}`,
     };
 
     try {
       await transporter.sendMail(mailOptions);
-      console.log(`Email sent to ${email}`);
+      console.log(`Email sent to ${subscriber.email}`);
     } catch (error) {
-      console.error(`Error sending email to ${email}:`, error);
+      console.error(`Error sending email to ${subscriber.email}:`, error);
     }
   }
 };
