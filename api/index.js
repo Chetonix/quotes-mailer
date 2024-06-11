@@ -4,8 +4,17 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const path = require('path');
+const cors = require('cors');
 require('dotenv').config();
 
+const corsOptions = {
+  origin: 'https://quotes-mailer.onrender.com', // Allow only this origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions)); // Allows requests only from specified origin
 
 const app = express();
 
