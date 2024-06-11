@@ -7,6 +7,8 @@ const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
 
+const app = express();
+
 const corsOptions = {
   origin: 'https://quotes-mailer.onrender.com', // Allow only this origin
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -16,7 +18,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // Allows requests only from specified origin
 
-const app = express();
+
 
 app.use(bodyParser.json());
 
