@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
+const cron = require('node-cron');
 
 const app = express();
 
@@ -98,20 +99,24 @@ const sendEmails = async (quotes) => {
   }
 };
 
-const cron = require('node-cron');
-cron.schedule('0 8 * * *', async () => {
-  const quotes = await fetchQuotes();
-  await sendEmails(quotes);
-  console.log('Emails sent at 8 AM');
+
+// Cron job to send emails at 8 AM IST
+cron.schedule('0 2 * * *', async () => {
+  console.log('Cron job triggered at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+
+  try {
+    const quotes = await fetchQuotes();
+    console.log('Fetched quotes:', quotes.length);
+
+    await sendEmails(quotes);
+    console.log('Emails sent at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  } catch (error) {
+    console.error('Error during cron job execution:', error);
+  }
+}, {
+  timezone: "Asia/Kolkata"
 });
 
-app.post('/api/send-test-email', async (req, res) => {
-  const quotes = await fetchQuotes();
-  console.log('Fetched quotes for test email:', quotes.length);
-
-  await sendEmails(quotes);
-  res.json({ message: 'Test email sent' });
-});
 
 
 const PORT = process.env.PORT || 5000;
