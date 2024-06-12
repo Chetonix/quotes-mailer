@@ -105,6 +105,15 @@ cron.schedule('0 8 * * *', async () => {
   console.log('Emails sent at 8 AM');
 });
 
+app.post('/api/send-test-email', async (req, res) => {
+  const quotes = await fetchQuotes();
+  console.log('Fetched quotes for test email:', quotes.length);
+
+  await sendEmails(quotes);
+  res.json({ message: 'Test email sent' });
+});
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
