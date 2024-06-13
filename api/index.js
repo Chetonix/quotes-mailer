@@ -78,6 +78,10 @@ const sendEmails = async (quotes) => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    tls: {
+      // do not fail on invalid certs
+      rejectUnauthorized: false,
+    },
   });
 
   const quote = quotes[Math.floor(Math.random() * quotes.length)];
@@ -116,6 +120,10 @@ cron.schedule('0 2 * * *', async () => {
 }, {
   timezone: "Asia/Kolkata"
 });
+
+
+
+console.log('Cron job scheduled');
 
 
 
