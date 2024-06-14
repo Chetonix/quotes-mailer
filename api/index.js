@@ -105,7 +105,7 @@ const sendEmails = async (quotes) => {
 
 
 // Cron job to send emails at 8 AM IST
-cron.schedule('0 2 * * *', async () => {
+cron.schedule('0 13 * * *', async () => {
   console.log('Cron job triggered at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
 
   try {
@@ -123,7 +123,7 @@ cron.schedule('0 2 * * *', async () => {
 
 
 
-console.log('Cron job scheduled');
+console.log('Cron job scheduled for 6:30 PM IST (13:00 UTC)');
 
 
 
