@@ -68,9 +68,15 @@ const fetchQuotes = async () => {
 };
 
 const sendEmails = async (quotes) => {
+  console.log('Starting email sending process...');
+  
   const subscribers = await Subscriber.find();
+  console.log(`Found ${subscribers.length} subscribers.`);
 
-  if (subscribers.length === 0) return;
+  if (subscribers.length === 0) {
+    console.log('No subscribers found.');
+    return;
+  }
 
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -79,12 +85,12 @@ const sendEmails = async (quotes) => {
       pass: process.env.EMAIL_PASS,
     },
     tls: {
-      // do not fail on invalid certs
-      rejectUnauthorized: false,
-    },
+      rejectUnauthorized: false
+    }
   });
 
   const quote = quotes[Math.floor(Math.random() * quotes.length)];
+  console.log('Selected quote:', quote);
 
   for (const subscriber of subscribers) {
     const mailOptions = {
@@ -94,18 +100,19 @@ const sendEmails = async (quotes) => {
       text: `${quote.text} - ${quote.author || 'Unknown'}`,
     };
 
+    console.log('Mail options:', mailOptions);
+
     try {
       await transporter.sendMail(mailOptions);
       console.log(`Email sent to ${subscriber.email}`);
     } catch (error) {
-      console.error(`Error sending email to ${subscriber.email}:`, error);
+      console.error(`Error sending email to ${subscriber.email}:`, error.message);
     }
   }
 };
 
-
-// Cron job to send emails at 8 AM IST
-cron.schedule('0 13 * * *', async () => {
+// Schedule the cron job for 6:30 PM IST (13:00 UTC)
+cron.schedule('30 13 * * *', async () => {
   console.log('Cron job triggered at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
 
   try {
@@ -121,9 +128,11 @@ cron.schedule('0 13 * * *', async () => {
   timezone: "Asia/Kolkata"
 });
 
+console.log('Cron job scheduled for 7:00 PM IST (13:00 UTC)');
 
 
-console.log('Cron job scheduled for 6:30 PM IST (13:00 UTC)');
+
+
 
 
 
