@@ -19,8 +19,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions)); // Allows requests only from specified origin
 
-
-
 app.use(bodyParser.json());
 
 // Serve static files from the 'frontend' directory
@@ -44,7 +42,32 @@ app.post('/api/subscribe', async (req, res) => {
     try {
       const subscriber = new Subscriber({ email });
       await subscriber.save();
-      res.json({ message: 'Subscription successful!' });
+
+      // Set up the transporter for sending the email
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+
+      // Define the mail options
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Subscription Confirmation',
+        text: 'Thank you for subscribing to our daily inspirational quotes!',
+      };
+
+      // Send the confirmation email
+      await transporter.sendMail(mailOptions);
+      console.log(`Confirmation email sent to ${email}`);
+
+      res.json({ message: 'Subscription successful! Confirmation email sent.' });
     } catch (error) {
       if (error.code === 11000) { // Duplicate key error code
         res.status(400).json({ message: 'Email already subscribed.' });
@@ -129,12 +152,6 @@ cron.schedule('30 13 * * *', async () => {
 });
 
 console.log('Cron job scheduled for 7:00 PM IST (13:00 UTC)');
-
-
-
-
-
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
