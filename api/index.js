@@ -7,8 +7,6 @@ const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
 const cron = require('node-cron');
-const { createBackgroundWorker } = require('render-background-worker');
-
 
 const app = express();
 
@@ -136,8 +134,24 @@ const sendEmails = async (quotes) => {
   }
 };
 
-createBackgroundWorker('./cron-worker.js'); // Path to your cron worker script
+// Schedule the cron job for 6:30 PM IST (13:00 UTC)
+cron.schedule('30 13 * * *', async () => {
+  console.log('Cron job triggered at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
 
+  try {
+    const quotes = await fetchQuotes();
+    console.log('Fetched quotes:', quotes.length);
+
+    await sendEmails(quotes);
+    console.log('Emails sent at', new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+  } catch (error) {
+    console.error('Error during cron job execution:', error);
+  }
+}, {
+  timezone: "Asia/Kolkata"
+});
+
+console.log('Cron job scheduled for 7:00 PM IST (13:00 UTC)');
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
